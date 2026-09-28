@@ -1,0 +1,52 @@
+name: users-service
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: users-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-users_db}
+    ports:
+      # 5433 on the host so a local PostgreSQL install on 5432 keeps working.
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-users_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks: [users-net]
+
+  api:
+    build:
+      context: .
+    container_name: users-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      SERVICE_NAME: users-service
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-users_db}
+      # Required in production: the app refuses to boot on the default value.
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env (see .env.example)}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-5}
+      DEFAULT_PAGE_SIZE: ${DEFAULT_PAGE_SIZE:-20}
+      MAX_PAGE_SIZE: ${MAX_PAGE_SIZE:-100}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    networks: [users-net]
+
+volumes:
+  pgdata:
+
+networks:
+  users-net:
+    driver: bridge

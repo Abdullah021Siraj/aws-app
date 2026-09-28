@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Users &middot; {{ service_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-head">
+    <h1>Users</h1>
+    <a class="button" href="{{ url_for('ui.new_user') }}">Add user</a>
+  </div>
+
+  {% if errors %}
+    <ul class="errors">
+      {% for error in errors %}<li>{{ error.field }}: {{ error.message }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <form class="filters" method="get" action="{{ url_for('ui.users') }}">
+    <label for="limit">Per page</label>
+    <select id="limit" name="limit" onchange="this.form.submit()">
+      {% for size in page_sizes %}
+        <option value="{{ size }}" {{ 'selected' if size == limit else '' }}>{{ size }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit">Apply</button></noscript>
+  </form>
+
+  {% if users %}
+    <table class="table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Created</th><th>Updated</th></tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td class="muted">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '-' }}</td>
+            <td class="muted">{{ user.updated_at.strftime('%Y-%m-%d %H:%M') if user.updated_at else '-' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <nav class="pager">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('ui.users', limit=limit, offset=pagination.prev_offset) }}">&larr; Previous</a>
+      {% else %}
+        <span class="disabled">&larr; Previous</span>
+      {% endif %}
+
+      <span class="muted">
+        {{ pagination.offset + 1 }}&ndash;{{ pagination.offset + pagination.count }} of {{ pagination.total }}
+      </span>
+
+      {% if pagination.has_next %}
+        <a href="{{ url_for('ui.users', limit=limit, offset=pagination.next_offset) }}">Next &rarr;</a>
+      {% else %}
+        <span class="disabled">Next &rarr;</span>
+      {% endif %}
+    </nav>
+  {% else %}
+    <p class="empty">No users found.</p>
+  {% endif %}
+{% endblock %}

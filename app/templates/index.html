@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; {{ service_name }}{% endblock %}
+
+{% block content %}
+  <h1>Service dashboard</h1>
+
+  <section class="cards">
+    <article class="card {{ 'card-ok' if health.status == 'ok' else 'card-bad' }}">
+      <h2>Database</h2>
+      <p class="metric">{{ health.status | upper }}</p>
+      <p class="muted">{{ health.latency_ms }} ms round trip</p>
+      {% if health.error %}<p class="muted">{{ health.error }}</p>{% endif %}
+    </article>
+
+    <article class="card">
+      <h2>Users</h2>
+      <p class="metric">{{ total_users }}</p>
+      <p class="muted"><a href="{{ url_for('ui.users') }}">View all</a></p>
+    </article>
+
+    <article class="card">
+      <h2>Uptime</h2>
+      <p class="metric">{{ '%.1f' | format(health.uptime_seconds) }}s</p>
+      <p class="muted">since process start</p>
+    </article>
+  </section>
+
+  <h2>Latest users</h2>
+  {% if recent_users %}
+    <table class="table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+        {% for user in recent_users %}
+          <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td class="muted">{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '-' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty">
+      No users yet. <a href="{{ url_for('ui.new_user') }}">Create the first one</a>.
+    </p>
+  {% endif %}
+{% endblock %}

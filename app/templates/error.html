@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ status }} &middot; {{ service_name }}{% endblock %}
+
+{% block content %}
+  <section class="error-page">
+    <p class="error-status">{{ status }}</p>
+    <h1>{{ code | replace('_', ' ') | title }}</h1>
+    <p class="muted">{{ message }}</p>
+    <p><a class="button" href="{{ url_for('ui.dashboard') }}">Back to dashboard</a></p>
+  </section>
+{% endblock %}

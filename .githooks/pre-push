@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Pre-push gate: runs the test suite before any push leaves your machine.
+# Bypass deliberately with:  git push --no-verify
+#
+# Only the fast SQLite pass runs here. The PostgreSQL pass is what CI does,
+# because it needs a database and takes ~3x longer.
+
+set -euo pipefail
+
+# Work from the repo root, whether invoked by git or by hand.
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_ROOT"
+
+# Prefer the project venv created by `make install`.
+if [ -x .venv/bin/python ]; then
+  PY=".venv/bin/python"
+else
+  PY="python3"
+  echo "pre-push: no .venv found, using $PY (run 'make install' for a pinned env)"
+fi
+
+# Unset TEST_DATABASE_URL so this stays hermetic: if it leaked in from your
+# shell, a missing database would fail the hook for the wrong reason.
+if [ -n "${TEST_DATABASE_URL:-}" ]; then
+  echo "pre-push: ignoring TEST_DATABASE_URL, using in-memory SQLite"
+  unset TEST_DATABASE_URL
+fi
+
+echo "pre-push: running unit tests..."
+
+"$PY" -m pytest -m "not integration" -q
+
+echo "pre-push: all tests passed, continuing with push"

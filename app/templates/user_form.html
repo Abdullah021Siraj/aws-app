@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}New user &middot; {{ service_name }}{% endblock %}
+
+{% block content %}
+  <h1>New user</h1>
+
+  {% if errors %}
+    <ul class="errors">
+      {% for error in errors %}<li>{{ error.field }}: {{ error.message }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <form class="stack" method="post" action="{{ url_for('ui.users') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" maxlength="120" required
+           value="{{ form.get('name', '') }}" placeholder="Ada Lovelace" />
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" maxlength="255" required
+           value="{{ form.get('email', '') }}" placeholder="ada@example.com" />
+
+    <div class="actions">
+      <button type="submit">Create user</button>
+      <a class="button ghost" href="{{ url_for('ui.users') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{{ service_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="wrap">
+        <a class="brand" href="{{ url_for('ui.dashboard') }}">
+          <span class="dot"></span>{{ service_name }}
+        </a>
+        <nav>
+          <a href="{{ url_for('ui.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('ui.users') }}">Users</a>
+          <a href="{{ url_for('ui.new_user') }}">New user</a>
+          <a href="/health" class="muted">/health</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes">
+            {% for category, message in messages %}
+              <li class="flash flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="wrap footer">
+      <span>{{ service_name }} v{{ service_version }}</span>
+      <span>JSON API stays available at <code>/health</code> and <code>/users</code></span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Dev tools use ranges, not exact pins: they are never deployed, and a bad pin
+# breaks `make install` for everyone. Runtime deps in requirements.txt stay
+# pinned so container builds are reproducible.
+pytest>=8,<10
+pytest-cov>=4.1
